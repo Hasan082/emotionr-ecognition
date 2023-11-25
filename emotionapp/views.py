@@ -1,10 +1,13 @@
+from django.conf import settings
 from django.shortcuts import render
-from django.http import StreamingHttpResponse
+from django.http import StreamingHttpResponse, HttpResponse
 import cv2
 from deepface import DeepFace
 import face_recognition
 import time
 import emoji
+
+DURATION = 5
 
 
 def map_to_emoji(emotion):
@@ -40,7 +43,8 @@ def process_frame(frame):
     for face_location in face_locations:
         top, right, bottom, left = face_location
         face_image = frame[top:bottom, left:right]
-        predictions = DeepFace.analyze(face_image, actions=['emotion'], enforce_detection=False)
+        predictions = DeepFace.analyze(face_image, actions=['emotion'],
+                                       enforce_detection=False)
 
         if isinstance(predictions, dict):
             raw_emotion = predictions.get('dominant_emotion', 'Unknown')
@@ -56,15 +60,16 @@ def process_frame(frame):
         results.append((timestamp, basic_emotion, emo))
 
         cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
-        cv2.putText(frame, basic_emotion, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+        cv2.putText(frame, basic_emotion, (left, top - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
 
     return frame, results
 
 
 def generate_frames():
     cap = cv2.VideoCapture(0)
+    out = cv2.VideoWriter(settings.VIDEO_OUTPUT_PATH, cv2.VideoWriter_fourcc(*'XVID'), 20.0, (640, 480))
     start_time = time.time()
-    DURATION = 5
     results = []
 
     while True:
@@ -79,6 +84,9 @@ def generate_frames():
         frame, frame_results = process_frame(frame)
         results.extend(frame_results)
 
+        # Write the frame to the video file
+        out.write(frame)
+
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
 
@@ -86,6 +94,7 @@ def generate_frames():
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
     cap.release()
+    out.release()
     cv2.destroyAllWindows()
 
     with open("emotion_results.txt", "w") as file:
@@ -100,3 +109,10 @@ def index(request):
 
 def video_feed(request):
     return StreamingHttpResponse(generate_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+
+def download_video(request):
+    with open(settings.VIDEO_OUTPUT_PATH, 'rb') as video_file:
+        response = HttpResponse(video_file.read(), content_type='video/x-msvideo')
+        response['Content-Disposition'] = 'inline; filename=output.avi'
+        return response
