@@ -127,7 +127,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 
 # New variable for video output path
-VIDEO_OUTPUT_PATH = os.path.join(BASE_DIR, 'output.avi')
+VIDEO_OUTPUT_PATH = os.path.join(BASE_DIR, 'media', 'videos', 'output.avi')
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
