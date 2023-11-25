@@ -1,21 +1,24 @@
-<!-- emotionapp/templates/index.html -->
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Emotion Recognition</title>
 </head>
-
 <body>
     <h1>Emotion Recognition</h1>
-    <img src="{% url 'video_feed' %}" alt="Emotion Recognition">
-    <br>
-    <br>
-    <video width="640" height="480" controls>
-        <source src="{% url 'video_feed' %}" type="video/avi">
-        Your browser does not support the video tag.
-    </video>
+    
+    <div>
+        <video id="videoFeed" width="640" height="480" autoplay></video>
+    </div>
 
+    <div>
+        <canvas id="resultCanvas" width="640" height="480"></canvas>
+    </div>
+
+    <div>
+        <h2>Emotion Results</h2>
+        <ul id="emotionList"></ul>
+    </div>
 </body>
-
 </html>

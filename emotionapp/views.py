@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import render
-from django.http import StreamingHttpResponse, HttpResponse
+from django.http import StreamingHttpResponse
 import cv2
 from deepface import DeepFace
 import face_recognition
@@ -109,10 +109,3 @@ def index(request):
 
 def video_feed(request):
     return StreamingHttpResponse(generate_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
-
-
-def download_video(request):
-    with open(settings.VIDEO_OUTPUT_PATH, 'rb') as video_file:
-        response = HttpResponse(video_file.read(), content_type='video/x-msvideo')
-        response['Content-Disposition'] = 'inline; filename=output.avi'
-        return response
